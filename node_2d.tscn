@@ -106,8 +106,11 @@ rotation = 1.57079
 shape = SubResource("CapsuleShape2D_7lohs")
 
 [node name="attackcd" type="Timer" parent="TopDowner/hitbox"]
-wait_time = 0.513
+wait_time = 0.5
 one_shot = true
+
+[node name="Camera2D" type="Camera2D" parent="TopDowner"]
+zoom = Vector2(2, 2)
 
 [connection signal="timeout" from="TopDowner/DodgeTimer" to="TopDowner" method="_on_dodge_timer_timeout"]
 [connection signal="timeout" from="TopDowner/DodgeRecovery" to="TopDowner" method="_on_dodge_recovery_timeout"]

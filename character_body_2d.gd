@@ -3,6 +3,7 @@ extends CharacterBody2D
 # Current state variables
 var can_dodge: bool = true
 var dodging: bool = false
+var attacking: bool = false
 var dodge_recovering: bool = false
 var attack_power = 5
 var thrust_distance = 50
@@ -11,12 +12,14 @@ var thrust_distance = 50
 var run_speed = 250
 var dodge_speed: int = 1000
 var direction: Vector2
+var attack_direction: Vector2
 var move_input = Vector2()
 var dodges = 2
 const MAX_DODGES = 2
 const DODGE_COOLDOWN_TIME = 1.0
 const DODGE_RECOVERY_TIME = 2.0
 
+# Refference variables
 @onready var dodge_timer = $DodgeTimer
 @onready var dodge_recovery = $DodgeRecovery
 @onready var dodge_cooldown = $DodgeCooldown
@@ -25,28 +28,39 @@ const DODGE_RECOVERY_TIME = 2.0
 @onready var sword_sprite = $hitbox/Sprite2D
 @onready var attackcd = $hitbox/attackcd
 
-func _physics_process(_delta) :
+func _physics_process(delta) :
+	attack_direction = (get_global_mouse_position() - global_position).normalized()
 	handle_movement()
-	handle_attacks()
+	handle_attacks(delta)
 	move_and_slide()
 	point_hitbox_to_mouse()
 	dodge_label.text = str(dodges)
 
-func handle_attacks():
-	if Input.is_action_just_pressed('left_click'):
+func handle_attacks(delta):
+	if Input.is_action_just_pressed('left_click') and not attacking:
+		attacking = true
+		var attack_vector: Vector2 = hitbox.global_position + attack_direction * thrust_distance
+		
+		# option 1 using tweens you can also change the speed
+		var tween = create_tween()
+		tween.tween_property(hitbox, "global_position", attack_vector, 0.3)
+		await tween.finished
+		attacking = false
+		
+		# option 2 and 3 are nearly the same. only difference is the method called
+		# option 2 using lerp()
+		hitbox.global_position = lerp(hitbox.global_position, attack_vector, 1) 
+		# option 3 using move_toward()
+		hitbox.global_position = hitbox.global_position.move_toward(attack_vector, 100)
+		
 		attackcd.start()
-		if attackcd.is_stopped():
-			hitbox.global_position = global_position + direction * thrust_distance
-			hitbox.global_position += (hitbox.global_position - global_position).normalized() * thrust_distance
-			sword_sprite.global_position = hitbox.global_position
-			print("Player attacked with power: ", attack_power)
+		print("Player attacked with power: ", attack_power)
 	#if Input.is_action_just_pressed('right_click'):
+
 func point_hitbox_to_mouse():
-	if attackcd.is_stopped():
-		var mouse_pos = get_global_mouse_position()
-		var attackdirection = (mouse_pos - global_position).normalized()
-		sword_sprite.rotation = attackdirection.angle() + PI/2
-		hitbox.global_position = global_position + attackdirection * 50
+	if not attacking:
+		sword_sprite.rotation = attack_direction.angle() + PI/2
+		hitbox.global_position = global_position + attack_direction * 50
 
 func handle_movement():
 	
@@ -67,6 +81,7 @@ func handle_dodge():
 		dodging = true
 		dodge_timer.start()
 
+# timeout section
 func _on_dodge_timer_timeout():
 	can_dodge = false
 	dodging = false
@@ -85,4 +100,5 @@ func _on_dodge_cooldown_timeout():
 	can_dodge = true
 
 func _on_attackcd_timeout():
-	hitbox.global_position += (hitbox.global_position - global_position).normalized() * thrust_distance
+	attacking = false
+	pass
