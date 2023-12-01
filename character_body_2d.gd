@@ -55,6 +55,7 @@ func handle_attacks(delta):
 		
 		attackcd.start()
 		print("Player attacked with power: ", attack_power)
+		
 	#if Input.is_action_just_pressed('right_click'):
 
 func point_hitbox_to_mouse():
