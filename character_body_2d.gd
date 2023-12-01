@@ -27,6 +27,9 @@ const DODGE_RECOVERY_TIME = 2.0
 @onready var hitbox = $hitbox
 @onready var sword_sprite = $hitbox/Sprite2D
 @onready var attackcd = $hitbox/attackcd
+@onready var projectiles = $Projectiles
+
+var fire_ball: PackedScene = preload("res://scenes/fire_ball.tscn")
 
 func _physics_process(delta) :
 	attack_direction = (get_global_mouse_position() - global_position).normalized()
@@ -42,21 +45,26 @@ func handle_attacks(delta):
 		var attack_vector: Vector2 = hitbox.global_position + attack_direction * thrust_distance
 		
 		# option 1 using tweens you can also change the speed
-		var tween = create_tween()
-		tween.tween_property(hitbox, "global_position", attack_vector, 0.3)
-		await tween.finished
-		attacking = false
+		#var tween = create_tween()
+		#tween.tween_property(hitbox, "global_position", attack_vector, 0.3)
+		#await tween.finished
+		#attacking = false
 		
 		# option 2 and 3 are nearly the same. only difference is the method called
 		# option 2 using lerp()
 		hitbox.global_position = lerp(hitbox.global_position, attack_vector, 1) 
 		# option 3 using move_toward()
-		hitbox.global_position = hitbox.global_position.move_toward(attack_vector, 100)
+		#hitbox.global_position = hitbox.global_position.move_toward(attack_vector, 100)
 		
 		attackcd.start()
 		print("Player attacked with power: ", attack_power)
 		
-	#if Input.is_action_just_pressed('right_click'):
+	if Input.is_action_just_pressed('right_click'):
+		var new_fire_ball = fire_ball.instantiate()
+		new_fire_ball.direction = attack_direction
+		projectiles.add_child(new_fire_ball)
+		
+		pass
 
 func point_hitbox_to_mouse():
 	if not attacking:

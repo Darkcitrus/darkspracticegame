@@ -1,4 +1,5 @@
-res://node_2d.tscn
-res://Node2D.gd
-res://CharacterBody2D.gd
 res://character_body_2d.gd
+res://node_2d.tscn
+res://scenes/character_body_2d.tscn
+res://scripts/fire_ball.gd
+res://scenes/fire_ball.tscn
